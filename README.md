@@ -1,3 +1,3 @@
-#topo-decay
+## topo-decay
 Nonlinear Stokes ice-flow solver in FEniCS configured for exploring topographic decay on floating ice shelves/shells. See agstub/linear-shelf-melt for more description for now...
 
