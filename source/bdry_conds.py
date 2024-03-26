@@ -38,7 +38,8 @@ def mark_boundary(domain):
     # 1 - Left boundary
     # 2 - Right boundary
     # 3 - Ice-water boundary
-
+    # 4 - Ice-air boundary
+    
     boundaries = [(3, WaterBoundary),(4,TopBoundary),(1, LeftBoundary),(2, RightBoundary)]
     facet_indices, facet_markers = [], []
     fdim = domain.topology.dim - 1

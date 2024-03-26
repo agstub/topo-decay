@@ -1,22 +1,19 @@
 # Surface mass balance functions (for upper and lower surfaces)
 # Note: I've written the expressions below so that they work on both UFL
-#       objects and numpy arrays because I also compute a linear solution
-#       by convolving m with a Green's function!
+#       objects and numpy arrays 
 import numpy as np
 from params import L, H, t_e
 from scipy.special import erf
-
-# m0 = 5 / 3.154e7               # max basal melt(+) or freeze(-) rate (m/yr)
-# stdev = 10*H/3                  # standard deviation for Gaussian basal melt anomaly
+from ufl import sin
 
 def step(t):
     return (t+abs(t))/(2*t)
 
-def smb_s(x,t,m0,stdev):
-    m = m0*(np.exp(1)**(-x**2/(stdev**2)))
-    return m*step(8*t_e-t)
+def smb_s(x,t,m0,lamda):
+    k = 2*np.pi/lamda   # k0 from 1e-2 to 1e2
+    m = m0*sin(k*x)
+    return m*step(4*t_e-t)
 
-def smb_h(x,t,m0,stdev):
+def smb_h(x,t,m0,lamda):
     # Surface mass balance functions (at upper surface)
-    a = m0*np.sqrt(np.pi)*stdev*erf(L/(2*stdev)) / L 
-    return a*step(8*t_e-t)
+    return 0*x 

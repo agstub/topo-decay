@@ -15,8 +15,6 @@ from petsc4py.PETSc import ScalarType
 from ufl import (Dx, FacetNormal, SpatialCoordinate, TestFunction,
                  TrialFunction, ds, dx, grad, inner)
 
-
-# ------------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------
 def move_mesh(w,domain,t,smb_h,smb_s):
     # this function computes the surface displacements and moves the mesh
@@ -36,11 +34,11 @@ def move_mesh(w,domain,t,smb_h,smb_s):
     l = inner(nu, v_)*ds
     prob0 = LinearProblem(a,l, bcs=[])
     n0 = prob0.solve()
-    
+    slope = n0/((1-n0**2)**0.5)
 
     # displacement at upper and lower boundaries
-    disp_h = dt*(w.sub(0).sub(1) + w.sub(0).sub(0)*n0 + smb_h(x[0],t))
-    disp_s = dt*(w.sub(0).sub(1) - w.sub(0).sub(0)*n0 + smb_s(x[0],t))
+    disp_h = dt*(w.sub(0).sub(1) + w.sub(0).sub(0)*slope + smb_h(x[0],t))
+    disp_s = dt*(w.sub(0).sub(1) - w.sub(0).sub(0)*slope + smb_s(x[0],t))
 
     disp_h_fcn = Function(V)
     disp_s_fcn = Function(V)
@@ -93,16 +91,3 @@ def get_surfaces(domain):
         s[i] = np.min(z[np.where(np.isclose(x_u[i],x))])
 
     return h,s,x_u
-
-def get_vel(sol,domain):
-    V = FunctionSpace(domain, ("CG", 1))
-    u_f = Function(V)
-    w_f = Function(V)
-    u_f.interpolate(Expression(sol.sub(0).sub(0), V.element.interpolation_points()))
-    w_f.interpolate(Expression(sol.sub(0).sub(1), V.element.interpolation_points()))
-    u = u_f.x.array
-    w = w_f.x.array
-    X = domain.geometry.x
-    x = X[:,0]
-    z = X[:,1]
-    return u,w,x,z

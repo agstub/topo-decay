@@ -13,7 +13,6 @@ from ufl import (FacetNormal, FiniteElement, Measure, MixedElement,
                  SpatialCoordinate, TestFunctions, div, dx, grad, inner, split,
                  sym)
 
-
 def eta(u):
       # ice viscosity 
       return 0.5*B*((inner(sym(grad(u)),sym(grad(u)))+eps_v)**(rm2/2.0))
