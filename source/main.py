@@ -4,39 +4,33 @@
 #------------------------------------------------------------------------------------
 
 import numpy as np
-from dolfinx.mesh import create_rectangle
 from mesh_routine import get_surfaces, move_mesh
-from mpi4py import MPI
-from params import H, L, Nx, Nz, nt, t_f
 from stokes import stokes_solve
 
 
-def solve(a,m):
-
-    # generate mesh
-    p0 = [-L/2.0,0.0]
-    p1 = [L/2.0,H]
-    domain = create_rectangle(MPI.COMM_WORLD,[p0,p1], [Nx, Nz])
+def solve(domain,timesteps):
 
     # Define arrays for saving surfaces
     h_i,s_i,x = get_surfaces(domain)
     nx = x.size
+    nt = timesteps.size
     h = np.zeros((nx,nt))
     s = np.zeros((nx,nt))
 
-    t = np.linspace(0,t_f, nt)
     # # Begin time stepping
+    dt = timesteps[1] - timesteps[0]
     for i in range(nt):
 
         print('Iteration '+str(i+1)+' out of '+str(nt)+' \r',end='')
 
-        t_i = t[i]
+        if i>0:
+            dt = timesteps[i] - timesteps[i-1]
 
         # Solve the Stoke problem for w = (u,p)
-        sol = stokes_solve(domain)
+        sol = stokes_solve(domain,dt)
 
         # Move the mesh 
-        domain = move_mesh(sol,domain,t_i,a,m)
+        domain = move_mesh(sol,domain,dt)
        
         # save surfaces
         h_i,s_i,x = get_surfaces(domain)

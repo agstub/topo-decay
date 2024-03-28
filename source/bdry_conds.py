@@ -6,7 +6,7 @@
 #-------------------------------------------------------------------------------
 import numpy as np
 from dolfinx.mesh import locate_entities, meshtags
-from params import L, z_max
+from params import sea_level
 
 #-------------------------------------------------------------------------------
 # Define SubDomains for ice-water boundary, ice-bed boundary, inflow (x=0) and
@@ -14,17 +14,17 @@ from params import L, z_max
 
 def WaterBoundary(x):
 # Ice-water boundary    
-    return np.less(x[1],z_max)
+    return np.less(x[1],sea_level)
 
 def TopBoundary(x):
 # Ice-air boundary    
-    return np.greater(x[1],z_max)
+    return np.greater(x[1],sea_level)
 
-def LeftBoundary(x):
+def LeftBoundary_(x,L):
     # Left boundary (inflow/outflow)
     return np.isclose(x[0],-L/2.0)
 
-def RightBoundary(x):
+def RightBoundary_(x,L):
     # Right boundary (inflow/outflow)
     return np.isclose(x[0],L/2.0)
 
@@ -39,6 +39,13 @@ def mark_boundary(domain):
     # 2 - Right boundary
     # 3 - Ice-water boundary
     # 4 - Ice-air boundary
+
+    L = domain.geometry.x[:,0].max()-domain.geometry.x[:,0].min()
+
+
+    LeftBoundary = lambda x: LeftBoundary_(x,L)
+    RightBoundary = lambda x: RightBoundary_(x,L)
+
     
     boundaries = [(3, WaterBoundary),(4,TopBoundary),(1, LeftBoundary),(2, RightBoundary)]
     facet_indices, facet_markers = [], []
@@ -52,4 +59,4 @@ def mark_boundary(domain):
     sorted_facets = np.argsort(facet_indices)
     facet_tag = meshtags(domain, fdim, facet_indices[sorted_facets], facet_markers[sorted_facets])
 
-    return facet_tag
+    return facet_tag,LeftBoundary,RightBoundary

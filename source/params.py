@@ -1,32 +1,17 @@
 # All model/numerical parameters are set here.
 
 # Model parameters
-A0 = 1e-32                         # Glen's law coefficient (ice softness, Pa^{-n}/s)
-n = 4.0                            # Glen's law exponent
-B0 = A0**(-1/n)                    # Ice hardness (Pa s^{1/n})
-B = (2**((n-1.0)/(2*n)))*B0        # "2*Viscosity" constant in weak form (Pa s^{1/n})
-rm2 = 1 + 1.0/n - 2.0              # Exponent in weak form: r-2
+rho_i = 917.0                                    # Density of ice [kg/m^3]
+rho_w = 1020.0                                   # Density of seawater [kg/m^3]
+g = 9.81                                         # Gravitational acceleration [m/s^2]
+eta0 = 1e14                                      # viscosity [Pa s]
+delta = rho_w/rho_i-1                            # flotation factor
+eps = 2.529e-14                                  # regularization for the relaxation("R") 
+                                                 # and buoyancy ("B") functions
 
-rho_i = 917.0                      # Density of ice
-rho_w = 1020.0                     # Density of seawater
-g = 9.81                           # Gravitational acceleration
-eta0 = 1e14                        # viscosity at zero deviatoric stress 
+H = 500.0                                        # Thickness (height of the domain) [m]
+sea_level = H*(rho_i/rho_w)                      # Sea level elevation [m]
+t_r = 2*eta0/(rho_i*g*H)                         # viscous relaxation time scale [s]
+t_e = (4*eta0/((rho_w-rho_i)*g*H))*(rho_w/rho_i) # intrinsic time scale [s]
 
-H = 500.0                          # Height of the domain
-L = 100*H                          # Length of the domain
-sea_level = H*(rho_i/rho_w)        # Sea level elevation.
-z_max = 0.9*H                      # Maximum channel height
-t_r = 2*eta0/(rho_i*g*H)           # viscous relaxation time scale
-
-# Numerical parameters
-eps_v = (2*eta0/B)**(2.0/rm2)      # Flow law regularization parameter
-
-# Mesh parameters
-Nx = int(L/100)                    # Number of elements in x direction
-Nz = int(H/100)                    # Number of elements in z direction
-
-# Time-stepping parameters
-t_e = (4*eta0/((rho_w-rho_i)*g*H))*(rho_w/rho_i)
-t_f = 10*t_e                       # Final time (in terms of relaxation timescale)
-nt = 10*int(t_f/t_r)               # Number of time steps
-dt = t_f/nt                        # Timestep size
+ratio = t_r/t_e
