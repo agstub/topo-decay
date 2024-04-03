@@ -13,7 +13,7 @@ from dolfinx.fem.petsc import LinearProblem
 from dolfinx.mesh import locate_entities_boundary
 from petsc4py.PETSc import ScalarType
 from ufl import (FacetNormal, SpatialCoordinate, TestFunction,
-                 TrialFunction, ds, dx, grad, inner)
+                 TrialFunction, ds, dx, grad, inner, cos)
 
 #-------------------------------------------------------------------------------------
 def move_mesh(w,domain,dt):
@@ -91,21 +91,21 @@ def get_surfaces(domain):
     return h,s,x_u
 
 
-def deform_mesh(domain,disp):
+def deform_mesh(domain,perturb):
     # this function deforms the meesh to create a 
     # perturbed initial condition
     V = FunctionSpace(domain, ("CG", 1))
     x = SpatialCoordinate(domain)
 
     # displacement at upper and lower boundaries
-    disp_h =  disp(x[0])
-    disp_s = lambda x: 0*x[0] + 0
-
+    disp_h = perturb[0](x[0])
+    disp_s =  perturb[1](x[0])
+   
     disp_h_fcn = Function(V)
     disp_s_fcn = Function(V)
     
+    disp_s_fcn.interpolate(Expression(disp_s, V.element.interpolation_points()))
     disp_h_fcn.interpolate(Expression(disp_h, V.element.interpolation_points()))
-    disp_s_fcn.interpolate(disp_s)
 
     facets_1 = locate_entities_boundary(domain, domain.topology.dim-1, WaterBoundary)        
     facets_2 = locate_entities_boundary(domain, domain.topology.dim-1, TopBoundary)

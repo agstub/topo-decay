@@ -7,15 +7,23 @@ from dolfinx.log import LogLevel, set_log_level
 from dolfinx.mesh import locate_entities_boundary
 from dolfinx.nls.petsc import NewtonSolver
 from mpi4py import MPI
-from params import g, rho_i, rho_w, sea_level, eta0
+import numpy as np
+from params import g, rho_i, rho_w, sea_level, eta0, H
 from petsc4py import PETSc
 from ufl import (FacetNormal, FiniteElement, Measure, MixedElement,
                  SpatialCoordinate, TestFunctions, div, dx, grad, inner, split,
                  sym)
 
+def Max(f1,f2):
+     # max function
+    return 0.5*(f1+f2 + ((f1-f2)**2)**0.5)
+
 def eta(z):
-      # ice viscosity 
-      return eta0
+    # ice viscosity 
+    eta_diff = 1e3 # viscosity enhancement at surface
+    d = H/np.log(eta_diff)
+    f = np.exp(1)**(z/d)    
+    return eta0 #Max(eta0*f,eta0)
 
 def weak_form(u,p,v,q,f,g_base,ds,nu,dt,x):
     z = x[1]
